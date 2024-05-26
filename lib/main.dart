@@ -48,9 +48,8 @@ Future<bool> sendCalls(task) async {
   final number = prefs.getString('OwnerNumber') ?? '-';
 
   if (name == '-') {
-    if (kDebugMode) {
-      print('Brak danych użytkownika');
-    }
+    dateNow = DateTime.now().toString();
+    await logChomik('$dateNow: sendCalls Brak danych użytkownika');
     return true;
   }
   try {
@@ -80,6 +79,9 @@ Future<bool> sendCalls(task) async {
       return true;
     }
 
+    dateNow = DateTime.now().toString();
+    await logChomik('$dateNow: sendCalls Task:$task LastDay:$lastDate');
+
     final Iterable<CallLogEntry> cLog = await CallLog.query(
       dateFrom: lastDate.millisecondsSinceEpoch,
     );
@@ -96,9 +98,15 @@ Future<bool> sendCalls(task) async {
       }
     });
 
+    dateNow = DateTime.now().toString();
+    await logChomik('$dateNow: sendCalls Task:$task CallLogCount:${callLogEntries.length}');
+
     for (CallLogEntry entry in callLogEntries) {
       DateTime start = DateTime.fromMillisecondsSinceEpoch(entry.timestamp??0);
       if (entry.duration == null || entry.duration! == 0) continue;
+
+      dateNow = DateTime.now().toString();
+      await logChomik('$dateNow: sendCalls Task:$task Entry:${entry.number}');
 
       String callType = callTypeStr(entry.callType);
       String contactName = 'nieznany';
@@ -106,11 +114,16 @@ Future<bool> sendCalls(task) async {
         contactName = entry.name ?? '-';
       }
 
+      String numberText = entry.number ?? '-';
+      if (!numberText.startsWith('+')) {
+        numberText = '+48$numberText';
+      }
+
       final body = json.encode({
         'Owner': name,
         'ownerNumber': number,
         'contactName':  contactName,
-        'contact': entry.number,
+        'contact': numberText,
         'contactType': callType,
         'callStart': start.toIso8601String(),
         'callDuration': entry.duration.toString()
@@ -129,6 +142,8 @@ Future<bool> sendCalls(task) async {
         await logChomik('$dateNow: SendCalls http.post:$e');
       }
     }
+    dateNow = DateTime.now().toString();
+    await logChomik('$dateNow: sendCalls Task:$task - OK');
     return true;
   } on PlatformException catch (e, s) {
     await logChomik('$dateNow: Exception $e $s');
@@ -140,7 +155,7 @@ Future<bool> sendCalls(task) async {
 Future<void> phoneStateBackgroundCallbackHandler(
     PhoneStateBackgroundEvent event,
     String number,
-    int duration,
+    int duration
     ) async {
 
   String dateNow = DateTime.now().toString();
@@ -162,8 +177,6 @@ Future<void> phoneStateBackgroundCallbackHandler(
       sendCalls("outgoingend");
       break;
     case PhoneStateBackgroundEvent.incomingmissed:
-      await Future.delayed(const Duration(seconds: 5));
-      sendCalls("incomingmissed");
       break;
   }
 }
@@ -296,6 +309,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   bool isActive = false;
   bool hasPermission = false;
   String logDir = "";
+  DateTime lastClickSend = DateTime(2024, 2, 1);
 
   Future<void> _hasPermission() async {
     final permission = await PhoneStateBackground.checkPermission();
@@ -461,7 +475,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      await sendCalls("Odwież");
+                      if (lastClickSend.difference(DateTime.now()).abs().inSeconds < 60) {
+                        _showAlertDialog(context, "Poprzednio uruchomiony proces jeszcze trwa ...");
+                      } else {
+                        await sendCalls("Wyślij");
+                      }
+                      lastClickSend = DateTime.now();
                       setState(() {});
                     },
                     child: Text('Wyślij',
@@ -557,5 +576,25 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       case CallType.wifiOutgoing:
         return const Icon(Icons.help);
     }
+  }
+
+  void _showAlertDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Uwaga"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
