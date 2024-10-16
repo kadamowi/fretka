@@ -29,9 +29,9 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "com.kris.fretka"
-    compileSdkVersion flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    namespace 'com.kris.fretka'
+    compileSdkVersion 35
+    ndkVersion "21.1.6352462"	
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -48,9 +48,8 @@ android {
 
     defaultConfig {
         applicationId "com.kris.fretka"
-        compileSdkVersion 34
         minSdkVersion 23
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -79,6 +78,6 @@ flutter {
 }
 
 dependencies {
-    implementation 'androidx.work:work-runtime:2.9.0'
-    implementation 'androidx.work:work-runtime-ktx:2.9.0'
+	implementation "androidx.multidex:multidex:2.0.1"
+	implementation 'androidx.annotation:annotation:1.5.0'
 }
