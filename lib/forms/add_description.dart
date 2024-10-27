@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:avatar_glow/avatar_glow.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -38,7 +39,9 @@ class _DescriptionPageState extends State<DescriptionPage> {
       String jsonResponse = respGet.body;
       if (respGet.statusCode != 200) {
         await logChomik('$dateNow: getDescription Error StatusCode:${respGet.statusCode}');
-        print('$dateNow: getDescription Error StatusCode:${respGet.statusCode}');
+        if (kDebugMode) {
+          print('$dateNow: getDescription Error StatusCode:${respGet.statusCode}');
+        }
         setState(() {
           _hasError = true;
         });
@@ -53,7 +56,9 @@ class _DescriptionPageState extends State<DescriptionPage> {
       });
     } catch (e) {
       await logChomik('$dateNow: sendCalls Error:$e');
-      print('$dateNow: sendCalls Error:$e');
+      if (kDebugMode) {
+        print('$dateNow: sendCalls Error:$e');
+      }
       setState(() {
         _hasError = true;
         _isLoading = false;
@@ -95,12 +100,6 @@ class _DescriptionPageState extends State<DescriptionPage> {
 
   void _startListening() async {
     await _speechToText.listen(onResult: _onSpeechResult);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Rozpoczęcie nasłuchiwania'),
-        duration: Duration(seconds: 2),
-      ),
-    );
     _speechToText.statusListener = (String status) {
       if (status == "done") {
         _stopListening();
@@ -112,12 +111,6 @@ class _DescriptionPageState extends State<DescriptionPage> {
 
   void _stopListening() async {
     await _speechToText.stop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Zakończenie nasłuchiwania'),
-        duration: Duration(seconds: 2),
-      ),
-    );
     setState(() {
       if (textInput.text.isEmpty) {
         textInput.text = voiceInput.text;
