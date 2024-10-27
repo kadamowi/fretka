@@ -42,7 +42,7 @@ Future<bool> sendCalls(task) async {
     DateTime lastDate = DateTime.now();
     if (task == "Tech") {
       lastDate = DateTime(2024, 2, 1);
-      name = "${name}_" + task;
+      name = "${name}_$task";
       number = task;
     } else {
       try {

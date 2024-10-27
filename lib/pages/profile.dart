@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../add_user_data.dart';
 import '../api/calls_info.dart';
 import '../api/user_info.dart';
+import '../forms/add_user_data.dart';
 import '../widgets/alert.dart';
 import '../widgets/page_header.dart';
 import '../widgets/theme_container.dart';
@@ -19,13 +20,36 @@ class ProfileTab extends StatefulWidget {
 
 class _ProfileTabState extends State<ProfileTab> {
   DateTime lastClickSend = DateTime(2024, 2, 1);
+  PackageInfo _packageInfo = PackageInfo(
+    appName: 'Unknown',
+    packageName: 'Unknown',
+    version: 'Unknown',
+    buildNumber: 'Unknown',
+    buildSignature: 'Unknown',
+    installerStore: 'Unknown',
+  );
 
   @override
   void initState() {
     if (kDebugMode) {
       print('Profile -> initState');
     }
+    _initPackageInfo();
     super.initState();
+  }
+
+  Future<void> _initPackageInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _packageInfo = info;
+    });
+  }
+
+  Widget _infoTile(String title, String subtitle) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(subtitle.isEmpty ? 'Not set' : subtitle),
+    );
   }
 
   @override
@@ -38,6 +62,7 @@ class _ProfileTabState extends State<ProfileTab> {
             ThemedContainer(
               child: Column(
                 children: [
+                  Text('${_packageInfo.appName} wersja ${_packageInfo.buildNumber}'),
                   Text('Użytkownik: $ownerName'),
                   Text('Telefon: $ownerNumber'),
                   SizedBox(height: 20),

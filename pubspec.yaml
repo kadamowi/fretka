@@ -1,7 +1,7 @@
 name: chomik
 description: "Lista połączeń"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.24+24
+version: 1.0.27+27
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -16,8 +16,11 @@ dependencies:
   intl: ^0.19.0
   phone_state_background: ^0.0.4
   path_provider: ^2.1.2
-  share_plus: ^10.0.2
+  share_plus: ^10.1.1
   call_log: ^4.0.0
+  speech_to_text: ^7.0.0
+  avatar_glow: ^3.0.1
+  package_info_plus: ^8.1.0
 
 dev_dependencies:
   flutter_test:

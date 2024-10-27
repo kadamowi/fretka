@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../api/calls_info.dart';
 import '../api/user_info.dart';
-import '../widgets/alert.dart';
+import '../forms/add_description.dart';
 import '../widgets/item_container.dart';
 import '../widgets/page_header.dart';
 import '../widgets/theme_container.dart';
@@ -24,8 +24,8 @@ class _CallsTabState extends State<CallsTab> {
   List<CallLogEntry> _callLogEntries = [];
   DateTime lastSynchroDate = DateTime(2024, 2, 1);
   int deviceCount = 0;
-  int toSybchroCount = 0;
-  DateTime lastClickSend = DateTime(2024, 2, 1);
+  int toSynchroCount = 0;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -59,7 +59,7 @@ class _CallsTabState extends State<CallsTab> {
       final Iterable<CallLogEntry> toSynchResult = await CallLog.query(
         dateFrom: lastSynchroDate.millisecondsSinceEpoch,
       );
-      toSybchroCount = toSynchResult.length;
+      toSynchroCount = toSynchResult.length;
     }
 
     final Iterable<CallLogEntry> result = await CallLog.query(
@@ -67,6 +67,19 @@ class _CallsTabState extends State<CallsTab> {
     );
     _callLogEntries = result.toList();
     deviceCount = _callLogEntries.length;
+  }
+
+  Future<void> _performSendCalls() async {
+    setState(() {
+      _isLoading = true; // Zmieniamy stan na ładowanie
+    });
+
+    await sendCalls("Wyślij");
+    await Future.delayed(Duration(seconds: 15));
+
+    setState(() {
+      _isLoading = false; // Zmieniamy stan po zakończeniu operacji
+    });
   }
 
   @override
@@ -80,22 +93,38 @@ class _CallsTabState extends State<CallsTab> {
             Expanded(
               child: ThemedContainer(
                 child: ListView.builder(
+                    physics: BouncingScrollPhysics(),
                     scrollDirection: Axis.vertical,
                     shrinkWrap: true,
                     itemCount: _callLogEntries.length,
                     itemBuilder: (context, index) {
+                      DateTime start = DateTime.fromMillisecondsSinceEpoch(_callLogEntries[index].timestamp ?? 0);
                       return ItemContainer(
                         child: ListTile(
-                            isThreeLine: true,
-                            title: Text('${_callLogEntries[index].name} ${_callLogEntries[index].number}'),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text('Start: ${DateTime.fromMillisecondsSinceEpoch(_callLogEntries[index].timestamp ?? 0)}'),
-                                Text('Czas: ${_callLogEntries[index].duration}'),
-                              ],
-                            ),
-                            leading: callTypeIcon(_callLogEntries[index].callType)),
+                          isThreeLine: true,
+                          title: Text('${_callLogEntries[index].name} ${_callLogEntries[index].number}'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text('Start: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(start)}'),
+                              Text('Czas: ${_callLogEntries[index].duration}'),
+                            ],
+                          ),
+                          leading: callTypeIcon(_callLogEntries[index].callType),
+                          trailing: InkWell(
+                            onTap: () {
+                              String formattedDate = DateFormat('yyyyMMddHHmmss').format(start);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => DescriptionPage(
+                                          callStart: formattedDate,
+                                        )),
+                              );
+                            },
+                            child: Icon(Icons.description, size: 50),
+                          ),
+                        ),
                       );
                     }),
               ),
@@ -111,23 +140,20 @@ class _CallsTabState extends State<CallsTab> {
                     children: [
                       Text('Liczba elementów na telefonie: $deviceCount', style: Theme.of(context).textTheme.labelMedium),
                       Text('Ostatnie połączenie: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(lastSynchroDate)}', style: Theme.of(context).textTheme.labelMedium),
-                      Text('Liczba elementów do wysłania: $toSybchroCount', style: Theme.of(context).textTheme.labelMedium),
+                      Text('Liczba elementów do wysłania: $toSynchroCount', style: Theme.of(context).textTheme.labelMedium),
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: () async {
-                      if (lastClickSend.difference(DateTime.now()).abs().inSeconds < 60) {
-                        showAlertDialog(context, "Poprzednio uruchomiony proces jeszcze trwa ...");
-                      } else {
-                        await sendCalls("Wyślij");
-                      }
-                      lastClickSend = DateTime.now();
-                      setState(() {});
-                    },
-                    child: Text('Wyślij',
-                        style: TextStyle(
-                          color: Colors.white,
-                        )),
+                    onPressed: _isLoading ? null : _performSendCalls,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isLoading ? Colors.grey : Colors.blue,
+                    ),
+                    child: _isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text('Wyślij',
+                            style: TextStyle(
+                              color: Colors.white,
+                            )),
                   ),
                 ],
               ),

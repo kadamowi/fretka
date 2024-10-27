@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../api/app_log.dart';
 import '../api/user_info.dart';
 import '../widgets/item_container.dart';
 import '../widgets/page_header.dart';
@@ -47,7 +48,37 @@ class _TasksTabState extends State<TasksTab> {
         _tasks = json.decode(response.body);
       });
     } else {
-      throw Exception('Failed to load tasks');
+      if (kDebugMode) {
+        print('ownerName: $ownerName');
+        print('statusCode: ${response.statusCode}');
+        print('body: ${response.body}');
+      }
+    }
+  }
+
+  Future<void> setTaskStatus(String id, String status) async {
+    final baseUrl = Uri.parse('https://ricco.azurewebsites.net/api/tasks');
+    final headers = {"Content-Type": "application/json", "App": "Fretka"};
+    String dateNow = DateTime.now().toString();
+    String newStatus = (status == 'Wykonane') ? 'Realizowane' : 'Wykonane';
+
+    try {
+      Uri uriPut = Uri.parse('$baseUrl/$id');
+      var respPut = await http.put(
+        uriPut,
+        headers: headers,
+        body: jsonEncode({
+          "status": newStatus,
+        }),
+      );
+      if (respPut.statusCode != 200) {
+        await logChomik('$dateNow: setStatus Error StatusCode:${respPut.statusCode}');
+      } else {
+        // Ponowne pobranie zadań po udanym ustawieniu statusu
+        await _fetchTasks();
+      }
+    } catch (e) {
+      await logChomik('$dateNow: setStatus Error:$e');
     }
   }
 
@@ -57,7 +88,7 @@ class _TasksTabState extends State<TasksTab> {
         child: Scaffold(
       body: Column(
         children: [
-          const PageHeader(title: 'Zadania w Ricco'),
+          const PageHeader(title: 'Zadania'),
           Expanded(
               child: ThemedContainer(
             child: ListView.builder(
@@ -66,26 +97,44 @@ class _TasksTabState extends State<TasksTab> {
               itemCount: _tasks.length,
               itemBuilder: (context, index) {
                 final task = _tasks[index];
-                return ItemContainer(
-                    child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(task['executionDate'].toString().substring(0, 10)),
-                        Text(task['appname']),
-                      ],
-                    ),
-                    Text(
-                      task['appDetails'],
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    Text(
-                      task['title'],
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ));
+                Color textColor = Colors.black;
+                DateTime taskStart = DateTime.parse(task['executionDate']);
+                DateTime today = DateTime.now();
+                DateTime justToday = DateTime(today.year, today.month, today.day);
+                if (taskStart.isBefore(justToday)) {
+                  textColor = Colors.red;
+                }
+                if (taskStart.isAfter(justToday)) {
+                  textColor = Colors.blue;
+                }
+                if (task['status'].toString() == 'Wykonane') {
+                  textColor = Colors.green;
+                }
+                return GestureDetector(
+                  onLongPress: () {
+                    setTaskStatus(task['id'].toString(), task['status'].toString());
+                  },
+                  child: ItemContainer(
+                      child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(task['executionDate'].toString().substring(0, 10)),
+                          Text(task['appname']),
+                        ],
+                      ),
+                      Text(
+                        task['appDetails'],
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: textColor),
+                      ),
+                      Text(
+                        task['title'],
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  )),
+                );
               },
             ),
           )),
