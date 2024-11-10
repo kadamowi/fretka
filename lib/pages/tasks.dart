@@ -22,26 +22,20 @@ class _TasksTabState extends State<TasksTab> {
 
   @override
   void initState() {
-    if (kDebugMode) {
-      print('Tasks -> initState');
-    }
     super.initState();
     _fetchTasks();
   }
 
   Future<void> _fetchTasks() async {
-    if (kDebugMode) {
-      print('Tasks -> _fetchTasks ($ownerName)');
-    }
-    final baseUrlLast = Uri.parse('https://ricco.azurewebsites.net/api/tasks');
+    final baseUrlTask = Uri.parse('https://ricco.azurewebsites.net/api/tasks');
     final headers = {"Content-Type": "application/json", "App": "Fretka"};
-    Uri urlLast = Uri(
-      scheme: baseUrlLast.scheme,
-      host: baseUrlLast.host,
-      path: baseUrlLast.path,
+    Uri urlTask = Uri(
+      scheme: baseUrlTask.scheme,
+      host: baseUrlTask.host,
+      path: baseUrlTask.path,
       queryParameters: {"owner": ownerName},
     );
-    final response = await http.get(urlLast, headers: headers);
+    final response = await http.get(urlTask, headers: headers);
 
     if (response.statusCode == 200) {
       setState(() {
@@ -49,6 +43,7 @@ class _TasksTabState extends State<TasksTab> {
       });
     } else {
       if (kDebugMode) {
+        print('_fetchTasks: $urlTask');
         print('ownerName: $ownerName');
         print('statusCode: ${response.statusCode}');
         print('body: ${response.body}');

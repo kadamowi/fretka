@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../api/calls_info.dart';
+import '../api/notes_api.dart';
 import '../api/user_info.dart';
 import '../forms/add_user_data.dart';
 import '../widgets/alert.dart';
@@ -31,9 +31,6 @@ class _ProfileTabState extends State<ProfileTab> {
 
   @override
   void initState() {
-    if (kDebugMode) {
-      print('Profile -> initState');
-    }
     _initPackageInfo();
     super.initState();
   }
@@ -112,6 +109,16 @@ class _ProfileTabState extends State<ProfileTab> {
                             }
                           },
                           child: Text('Wyślij wszystko', style: Theme.of(context).textTheme.labelLarge),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      SizedBox(
+                        width: 200,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            updateNoteAfterSync('Profile send');
+                          },
+                          child: Text('Wyślij notatki', style: Theme.of(context).textTheme.labelLarge),
                         ),
                       ),
                     ],

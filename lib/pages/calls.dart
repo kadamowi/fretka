@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:call_log/call_log.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 import '../api/calls_info.dart';
+import '../api/description_api.dart';
 import '../api/user_info.dart';
 import '../forms/add_description.dart';
 import '../widgets/item_container.dart';
@@ -29,9 +29,6 @@ class _CallsTabState extends State<CallsTab> {
 
   @override
   void initState() {
-    if (kDebugMode) {
-      print('Calls -> initState');
-    }
     getCalls().then((value) {
       setState(() {});
     });
@@ -39,9 +36,6 @@ class _CallsTabState extends State<CallsTab> {
   }
 
   Future<void> getCalls() async {
-    if (kDebugMode) {
-      print('Calls -> _getCalls ($ownerName)');
-    }
     if (ownerName.isNotEmpty) {
       final baseUrlLast = Uri.parse('https://ricco.azurewebsites.net/api/last');
       final headers = {"Content-Type": "application/json", "App": "Fretka"};
@@ -82,6 +76,12 @@ class _CallsTabState extends State<CallsTab> {
     });
   }
 
+  void _handleTextChanged(DescriptionType newText) {
+    setState(() {
+      setDescription(newText);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -114,13 +114,22 @@ class _CallsTabState extends State<CallsTab> {
                           trailing: InkWell(
                             onTap: () {
                               String formattedDate = DateFormat('yyyyMMddHHmmss').format(start);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => DescriptionPage(
-                                          callStart: formattedDate,
-                                        )),
-                              );
+                              DescriptionType desc = DescriptionType(id: 0, description: '');
+                              getDescription(formattedDate).then((value) {
+                                desc = value;
+                                if (desc.id > 0) {
+                                  if (mounted) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => AddDescription(
+                                                initialDescription: desc,
+                                                onTextChanged: _handleTextChanged,
+                                              )),
+                                    );
+                                  }
+                                }
+                              });
                             },
                             child: Icon(Icons.description, size: 50),
                           ),

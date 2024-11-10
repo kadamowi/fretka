@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:chomik/api/user_info.dart';
 import 'package:chomik/pages/calls.dart';
+import 'package:chomik/pages/notes.dart';
 import 'package:chomik/pages/profile.dart';
 import 'package:chomik/pages/tasks.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_state_background/phone_state_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api/app_log.dart';
 import 'api/calls_info.dart';
+import 'api/notes_api.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -22,6 +27,9 @@ class _StateHomePage extends State<HomePage> {
   int _selectedIndex = 0;
   bool hasPermission = false;
   bool _isUserLoaded = false;
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   Future<void> _checkPermission() async {
     final permission = await PhoneStateBackground.checkPermission();
@@ -33,6 +41,7 @@ class _StateHomePage extends State<HomePage> {
   Future<void> _init() async {
     try {
       await PhoneStateBackground.initialize(phoneStateBackgroundCallbackHandler);
+      _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     } catch (e) {
       String dateNow = DateTime.now().toString();
       await logChomik('$dateNow: Init error, hasPermission: $e');
@@ -43,6 +52,7 @@ class _StateHomePage extends State<HomePage> {
   void initState() {
     super.initState();
     _checkPermission();
+    initConnectivity();
     SharedPreferences.getInstance().then((value) {
       preferences = value;
       getUser();
@@ -51,6 +61,34 @@ class _StateHomePage extends State<HomePage> {
       });
       _checkPermission().then((_) => _init());
     });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> initConnectivity() async {
+    late List<ConnectivityResult> result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } catch (e) {
+      String dateNow = DateTime.now().toString();
+      await logChomik('$dateNow: checkConnectivity error: $e');
+      return;
+    }
+    if (!mounted) {
+      return Future.value(null);
+    }
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
+    if (!result.contains(ConnectivityResult.none)) {
+      updateNoteAfterSync('Conectivity');
+    }
   }
 
   @override
@@ -72,6 +110,7 @@ class _StateHomePage extends State<HomePage> {
                 children: const [
                   CallsTab(),
                   TasksTab(),
+                  NotesTab(),
                   ProfileTab(),
                 ],
                 onPageChanged: (index) {
@@ -93,6 +132,7 @@ class _StateHomePage extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.phone), label: 'Połączenia'),
           BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Zadania'),
+          BottomNavigationBarItem(icon: Icon(Icons.notes), label: 'Notatki'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profil'),
         ],
       ),
