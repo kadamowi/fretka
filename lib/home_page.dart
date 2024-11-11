@@ -15,8 +15,7 @@ import 'api/calls_info.dart';
 import 'api/notes_api.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
-  final String title;
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _StateHomePage();
@@ -24,38 +23,37 @@ class HomePage extends StatefulWidget {
 
 class _StateHomePage extends State<HomePage> {
   final _pageViewController = PageController();
-  int _selectedIndex = 0;
-  bool hasPermission = false;
-  bool _isUserLoaded = false;
-  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  int _selectedIndex = 0;
+  bool _hasPermission = false;
+  bool _isUserLoaded = false;
 
   Future<void> _checkPermission() async {
     final permission = await PhoneStateBackground.checkPermission();
     if (mounted) {
-      setState(() => hasPermission = permission);
+      setState(() => _hasPermission = permission);
     }
   }
 
   Future<void> _init() async {
+    String dateNow = DateTime.now().toString();
     try {
       await PhoneStateBackground.initialize(phoneStateBackgroundCallbackHandler);
       _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     } catch (e) {
-      String dateNow = DateTime.now().toString();
-      await logChomik('$dateNow: Init error, hasPermission: $e');
+      await logChomik('$dateNow: HomePage Init error, hasPermission: $_hasPermission, Error: $e');
     }
+    await logChomik('$dateNow: HomePage Init');
   }
 
   @override
   void initState() {
     super.initState();
-    _checkPermission();
-    initConnectivity();
     SharedPreferences.getInstance().then((value) {
       preferences = value;
       getUser();
+      initConnectivity();
       setState(() {
         _isUserLoaded = true;
       });
@@ -82,10 +80,14 @@ class _StateHomePage extends State<HomePage> {
     if (!mounted) {
       return Future.value(null);
     }
+    String dateNow = DateTime.now().toString();
+    await logChomik('$dateNow: initConnectivity: $result');
     return _updateConnectionStatus(result);
   }
 
   Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
+    String dateNow = DateTime.now().toString();
+    await logChomik('$dateNow: updateConnectionStatus: $result');
     if (!result.contains(ConnectivityResult.none)) {
       updateNoteAfterSync('Conectivity');
     }
@@ -114,9 +116,10 @@ class _StateHomePage extends State<HomePage> {
                   ProfileTab(),
                 ],
                 onPageChanged: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
+                  _selectedIndex = index;
+                  if (mounted) {
+                    setState(() {});
+                  }
                 },
               ),
             ),

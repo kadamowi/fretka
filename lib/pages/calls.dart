@@ -22,7 +22,7 @@ class CallsTab extends StatefulWidget {
 
 class _CallsTabState extends State<CallsTab> {
   List<CallLogEntry> _callLogEntries = [];
-  DateTime lastSynchroDate = DateTime(2024, 2, 1);
+  DateTime lastSynchroDate = DateTime.now().add(Duration(days: -30));
   int deviceCount = 0;
   int toSynchroCount = 0;
   bool _isLoading = false;
@@ -57,23 +57,24 @@ class _CallsTabState extends State<CallsTab> {
     }
 
     final Iterable<CallLogEntry> result = await CallLog.query(
-      dateFrom: DateTime(2024, 2, 1).millisecondsSinceEpoch,
+      dateFrom: DateTime.now().add(Duration(days: -30)).millisecondsSinceEpoch,
     );
     _callLogEntries = result.toList();
     deviceCount = _callLogEntries.length;
   }
 
   Future<void> _performSendCalls() async {
-    setState(() {
-      _isLoading = true; // Zmieniamy stan na ładowanie
-    });
+    _isLoading = true;
+    if (mounted) {
+      setState(() {});
+    }
 
     await sendCalls("Wyślij");
     await Future.delayed(Duration(seconds: 15));
-
-    setState(() {
-      _isLoading = false; // Zmieniamy stan po zakończeniu operacji
-    });
+    _isLoading = false;
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _handleTextChanged(DescriptionType newText) {
@@ -147,7 +148,7 @@ class _CallsTabState extends State<CallsTab> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Liczba elementów na telefonie: $deviceCount', style: Theme.of(context).textTheme.labelMedium),
+                      Text('Liczba elementów (30 dni) na telefonie: $deviceCount', style: Theme.of(context).textTheme.labelMedium),
                       Text('Ostatnie połączenie: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(lastSynchroDate)}', style: Theme.of(context).textTheme.labelMedium),
                       Text('Liczba elementów do wysłania: $toSynchroCount', style: Theme.of(context).textTheme.labelMedium),
                     ],

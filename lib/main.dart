@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ricco - historia połączeń',
+      title: 'Chomik',
       theme: ThemeData(
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
           backgroundColor: Colors.blue[100], // Kolor tła nawigacji
@@ -69,7 +69,7 @@ class MyApp extends StatelessWidget {
             titleTextStyle: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
         useMaterial3: true,
       ),
-      home: const HomePage(title: 'Ricco - historia połączeń'),
+      home: const HomePage(),
     );
   }
 }

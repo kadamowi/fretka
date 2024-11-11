@@ -18,7 +18,7 @@ class _AddDescriptionState extends State<AddDescription> {
   final GlobalKey<FormState> _formStateKey = GlobalKey<FormState>();
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
-  TextEditingController voiceInput = TextEditingController();
+  //TextEditingController voiceInput = TextEditingController();
   TextEditingController textInput = TextEditingController();
   late String _description;
 
@@ -31,8 +31,10 @@ class _AddDescriptionState extends State<AddDescription> {
   void initState() {
     _initSpeech();
     super.initState();
-    _description = widget.initialDescription.description;
-    textInput.text = _description;
+    setState(() {
+      textInput.text = widget.initialDescription.description;
+    });
+    _startListening();
   }
 
   void _startListening() async {
@@ -50,17 +52,18 @@ class _AddDescriptionState extends State<AddDescription> {
     await _speechToText.stop();
     setState(() {
       if (textInput.text.isEmpty) {
-        textInput.text = voiceInput.text;
+        textInput.text = _description;
       } else {
-        textInput.text = '${textInput.text} ${voiceInput.text}';
+        textInput.text = '${textInput.text} $_description';
       }
-      voiceInput.clear();
+      _description = '';
+      //voiceInput.clear();
     });
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
     setState(() {
-      voiceInput.text = result.recognizedWords;
+      _description = result.recognizedWords;
     });
   }
 
@@ -126,6 +129,7 @@ class _AddDescriptionState extends State<AddDescription> {
                         ],
                       ),
                       const SizedBox(height: 5.0),
+                      /*
                       TextFormField(
                         controller: voiceInput,
                         keyboardType: TextInputType.multiline,
@@ -143,6 +147,7 @@ class _AddDescriptionState extends State<AddDescription> {
                         ),
                       ),
                       const SizedBox(height: 5.0),
+                       */
                       TextFormField(
                         controller: textInput,
                         validator: (value) {
@@ -157,17 +162,6 @@ class _AddDescriptionState extends State<AddDescription> {
                         minLines: 5,
                         textCapitalization: TextCapitalization.sentences,
                       ),
-                      const SizedBox(height: 10.0),
-                      SizedBox(
-                          child: ElevatedButton(
-                        child: Text('Zapisz', style: Theme.of(context).textTheme.labelLarge),
-                        onPressed: () {
-                          if (_formStateKey.currentState!.validate()) {
-                            _formStateKey.currentState!.save();
-                            Navigator.pop(context);
-                          }
-                        },
-                      ))
                     ],
                   ),
                 ),

@@ -20,7 +20,7 @@ class NotesTab extends StatefulWidget {
 
 class _NotesTabState extends State<NotesTab> {
   List<dynamic> _notes = [];
-  bool isUpdateing = false;
+  bool isUpdating = false;
 
   @override
   void initState() {
@@ -31,14 +31,14 @@ class _NotesTabState extends State<NotesTab> {
   Future<void> _fetchNotes() async {
     final notes = await DatabaseHelper().getAllNotes();
     setState(() {
-      isUpdateing = false;
+      isUpdating = false;
       _notes = notes;
     });
   }
 
   Future<void> _handleTextChanged(DescriptionType newText) async {
     setState(() {
-      isUpdateing = true;
+      isUpdating = true;
     });
     if (newText.id == 0) {
       final note = {'owner': ownerName, 'description': newText.description, 'created': DateTime.now().toString()};
@@ -59,7 +59,7 @@ class _NotesTabState extends State<NotesTab> {
           const PageHeader(title: 'Notatki'),
           Expanded(
               child: ThemedContainer(
-            child: (isUpdateing)
+            child: (isUpdating)
                 ? Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center, // Wyrównanie poziome do środka

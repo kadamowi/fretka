@@ -38,9 +38,10 @@ class _TasksTabState extends State<TasksTab> {
     final response = await http.get(urlTask, headers: headers);
 
     if (response.statusCode == 200) {
-      setState(() {
-        _tasks = json.decode(response.body);
-      });
+      _tasks = json.decode(response.body);
+      if (mounted) {
+        setState(() {});
+      }
     } else {
       if (kDebugMode) {
         print('_fetchTasks: $urlTask');
