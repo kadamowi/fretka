@@ -17,13 +17,27 @@ class TasksTab extends StatefulWidget {
   State<TasksTab> createState() => _TasksTabState();
 }
 
-class _TasksTabState extends State<TasksTab> {
+class _TasksTabState extends State<TasksTab> with WidgetsBindingObserver {
   List<dynamic> _tasks = [];
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchTasks();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _fetchTasks();
+    }
   }
 
   Future<void> _fetchTasks() async {

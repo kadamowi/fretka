@@ -20,7 +20,7 @@ class CallsTab extends StatefulWidget {
   State<CallsTab> createState() => _CallsTabState();
 }
 
-class _CallsTabState extends State<CallsTab> {
+class _CallsTabState extends State<CallsTab> with WidgetsBindingObserver {
   List<CallLogEntry> _callLogEntries = [];
   DateTime lastSynchroDate = DateTime.now().add(Duration(days: -30));
   int deviceCount = 0;
@@ -29,10 +29,26 @@ class _CallsTabState extends State<CallsTab> {
 
   @override
   void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
     getCalls().then((value) {
       setState(() {});
     });
-    super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      getCalls().then((value) {
+        setState(() {});
+      });
+    }
   }
 
   Future<void> getCalls() async {
@@ -94,7 +110,6 @@ class _CallsTabState extends State<CallsTab> {
             Expanded(
               child: ThemedContainer(
                 child: ListView.builder(
-                    physics: BouncingScrollPhysics(),
                     scrollDirection: Axis.vertical,
                     shrinkWrap: true,
                     itemCount: _callLogEntries.length,
