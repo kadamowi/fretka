@@ -1,0 +1,12 @@
+App started in: C:\Users\kadam\StudioProjects\fretka
+App started in: C:\Users\kadam\StudioProjects\fretka
+sqfliteFfiInit
+databaseFactory
+przed runy
+Home Page initState
+App started in: C:\Users\kadam\StudioProjects\fretka
+ensureInitialized
+sqfliteFfiInit
+databaseFactory
+przed runy
+Home Page initState

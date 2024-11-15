@@ -1,9 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  sqfliteFfiInit();
+  if (Platform.isWindows) {
+    databaseFactory = databaseFactoryFfi;
+    await windowManager.ensureInitialized();
+    windowManager.setTitle('Chomik Windows');
+  }
   runApp(const MyApp());
 }
 

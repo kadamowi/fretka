@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -87,31 +89,38 @@ class _ProfileTabState extends State<ProfileTab> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Center(child: Text('Operacje techniczne', style: Theme.of(context).textTheme.titleMedium)),
-                      SizedBox(
-                        width: 200,
-                        child: ElevatedButton(
-                            onPressed: () async {
-                              final directory = await getApplicationDocumentsDirectory();
-                              Share.shareXFiles([XFile('${directory.path}/chomik.log')], text: 'directory.path');
-                            },
-                            child: Text('Udostępnij log', style: Theme.of(context).textTheme.labelLarge)),
-                      ),
-                      SizedBox(height: 20),
-                      SizedBox(
-                        width: 200,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            if (lastClickSend.difference(DateTime.now()).abs().inMinutes < 60) {
-                              showAlertDialog(context, "Niedawno wysyłałeś ...");
-                            } else {
-                              sendCalls("Tech");
-                              lastClickSend = DateTime.now();
-                            }
-                          },
-                          child: Text('Wyślij wszystko', style: Theme.of(context).textTheme.labelLarge),
+                      Visibility(
+                        visible: !Platform.isWindows,
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: 200,
+                              child: ElevatedButton(
+                                  onPressed: () async {
+                                    final directory = await getApplicationDocumentsDirectory();
+                                    Share.shareXFiles([XFile('${directory.path}/chomik.log')], text: 'directory.path');
+                                  },
+                                  child: Text('Udostępnij log', style: Theme.of(context).textTheme.labelLarge)),
+                            ),
+                            SizedBox(height: 20),
+                            SizedBox(
+                              width: 200,
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  if (lastClickSend.difference(DateTime.now()).abs().inMinutes < 60) {
+                                    showAlertDialog(context, "Niedawno wysyłałeś ...");
+                                  } else {
+                                    sendCalls("Tech");
+                                    lastClickSend = DateTime.now();
+                                  }
+                                },
+                                child: Text('Wyślij wszystko', style: Theme.of(context).textTheme.labelLarge),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 20),
                       SizedBox(
                         width: 200,
                         child: ElevatedButton(

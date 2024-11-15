@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:chomik/api/user_info.dart';
 import 'package:chomik/pages/calls.dart';
@@ -109,12 +110,18 @@ class _StateHomePage extends State<HomePage> {
             Expanded(
               child: PageView(
                 controller: _pageViewController,
-                children: const [
-                  CallsTab(),
-                  TasksTab(),
-                  NotesTab(),
-                  ProfileTab(),
-                ],
+                children: (Platform.isWindows)
+                    ? [
+                        NotesTab(),
+                        TasksTab(),
+                        ProfileTab(),
+                      ]
+                    : [
+                        CallsTab(),
+                        TasksTab(),
+                        NotesTab(),
+                        ProfileTab(),
+                      ],
                 onPageChanged: (index) {
                   _selectedIndex = index;
                   if (mounted) {
@@ -132,12 +139,18 @@ class _StateHomePage extends State<HomePage> {
           _pageViewController.animateToPage(index, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
         },
         currentIndex: _selectedIndex,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.phone), label: 'Połączenia'),
-          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Zadania'),
-          BottomNavigationBarItem(icon: Icon(Icons.notes), label: 'Notatki'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profil'),
-        ],
+        items: (Platform.isWindows)
+            ? [
+                BottomNavigationBarItem(icon: Icon(Icons.notes), label: 'Notatki'),
+                BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Zadania'),
+                BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profil'),
+              ]
+            : [
+                BottomNavigationBarItem(icon: Icon(Icons.phone), label: 'Połączenia'),
+                BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Zadania'),
+                BottomNavigationBarItem(icon: Icon(Icons.notes), label: 'Notatki'),
+                BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profil'),
+              ],
       ),
     );
   }
