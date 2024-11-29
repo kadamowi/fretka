@@ -73,10 +73,7 @@ class MyApp extends StatelessWidget {
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
         listTileTheme: const ListTileThemeData(
-            textColor: Colors.black,
-            tileColor: Colors.grey,
-            dense: true,
-            titleTextStyle: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+            textColor: Colors.black, dense: true, titleTextStyle: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
         useMaterial3: true,
       ),
       home: const HomePage(),

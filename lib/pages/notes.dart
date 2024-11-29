@@ -29,6 +29,7 @@ class _NotesTabState extends State<NotesTab> {
   }
 
   Future<void> _fetchNotes() async {
+    await updateNoteAfterSync('Text changed');
     final notes = await DatabaseHelper().getAllNotes();
     setState(() {
       isUpdating = false;
@@ -46,7 +47,6 @@ class _NotesTabState extends State<NotesTab> {
     } else {
       await DatabaseHelper().updateNoteDescription(newText.id, newText.description);
     }
-    await updateNoteAfterSync('Text changed');
     await _fetchNotes();
   }
 
