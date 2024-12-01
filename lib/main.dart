@@ -13,6 +13,7 @@ Future<void> main() async {
     databaseFactory = databaseFactoryFfi;
     await windowManager.ensureInitialized();
     windowManager.setTitle('Chomik Windows');
+    //windowManager.setIcon('assets/images/Chomik.ico');
   }
   runApp(const MyApp());
 }

@@ -102,7 +102,7 @@ class _AddDescriptionState extends State<AddDescription> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Rozpoznanie głosowe',
+                            _speechEnabled ? 'Rozpoznanie głosowe' : 'Wprowadź treść',
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
                           Visibility(
