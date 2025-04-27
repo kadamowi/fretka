@@ -9,6 +9,7 @@ import 'package:phone_state_background/phone_state_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_log.dart';
+import 'call_monitor.dart';
 
 @pragma('vm:entry-point')
 Future<bool> sendCalls(task) async {
@@ -135,27 +136,51 @@ Future<bool> sendCalls(task) async {
 
 @pragma('vm:entry-point')
 Future<void> phoneStateBackgroundCallbackHandler(PhoneStateBackgroundEvent event, String number, int duration) async {
+  final callMonitor = CallMonitor();
+
   String dateNow = DateTime.now().toString();
   await logChomik('$dateNow: $event $number $duration');
+  addLog('phoneStateBackgroundCallback', '$dateNow: $event $number $duration');
 
   switch (event) {
     case PhoneStateBackgroundEvent.incomingstart:
+      if (kDebugMode) {
+        print('Incoming call started');
+      }
+      addLog('callMonitor', 'startRecording $number');
+      await callMonitor.startRecording(number);
       break;
     case PhoneStateBackgroundEvent.incomingreceived:
       break;
     case PhoneStateBackgroundEvent.incomingend:
+      if (kDebugMode) {
+        print('Call ended');
+      }
+      addLog('callMonitor', 'stopRecording $number');
+      await callMonitor.stopRecording();
       await Future.delayed(const Duration(seconds: 5));
       sendCalls("incomingend");
       break;
     case PhoneStateBackgroundEvent.outgoingstart:
+      if (kDebugMode) {
+        print('Outgoing call started');
+      }
+      addLog('callMonitor', 'startRecording $number');
+      await callMonitor.startRecording(number);
       break;
     case PhoneStateBackgroundEvent.outgoingend:
+      if (kDebugMode) {
+        print('Call ended');
+      }
+      addLog('callMonitor', 'stopRecording $number');
+      await callMonitor.stopRecording();
       await Future.delayed(const Duration(seconds: 5));
       sendCalls("outgoingend");
       break;
     case PhoneStateBackgroundEvent.incomingmissed:
       break;
   }
+  await callMonitor.disposeRecorder();
 }
 
 String callTypeStr(CallType? callTypeEntry) {

@@ -1,4 +1,5 @@
 import 'package:avatar_glow/avatar_glow.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -14,7 +15,7 @@ class AddDescription extends StatefulWidget {
   State<AddDescription> createState() => _AddDescriptionState();
 }
 
-class _AddDescriptionState extends State<AddDescription> {
+class _AddDescriptionState extends State<AddDescription> with WidgetsBindingObserver {
   final GlobalKey<FormState> _formStateKey = GlobalKey<FormState>();
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
@@ -29,12 +30,19 @@ class _AddDescriptionState extends State<AddDescription> {
 
   @override
   void initState() {
-    _initSpeech();
     super.initState();
+    WidgetsBinding.instance.addObserver(this); // obserwuj cykl życia
+    _initSpeech();
     setState(() {
       textInput.text = widget.initialDescription.description;
     });
     _startListening();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // przestań obserwować
+    super.dispose();
   }
 
   void _startListening() async {
@@ -68,16 +76,35 @@ class _AddDescriptionState extends State<AddDescription> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached || state == AppLifecycleState.inactive) {
+      if (kDebugMode) {
+        print('didChangeAppLifecycleState: $state');
+      }
+      _saveNote();
+    }
+  }
+
+  void _saveNote() {
+    if (_formStateKey.currentState?.validate() ?? false) {
+      _formStateKey.currentState!.save();
+      widget.onTextChanged(DescriptionType(
+        id: widget.initialDescription.id,
+        description: textInput.text.trim(),
+      ));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
-        if (_formStateKey.currentState!.validate()) {
-          _formStateKey.currentState!.save();
-          widget.onTextChanged(DescriptionType(
-            id: widget.initialDescription.id,
-            description: _description,
-          ));
+        if (didPop) {
+          if (kDebugMode) {
+            print('Zamknięcie krzyżykiem');
+          }
+          _saveNote();
         }
       },
       child: SafeArea(

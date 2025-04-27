@@ -31,15 +31,15 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace 'com.kris.fretka'
     compileSdkVersion 35
-    ndkVersion "21.1.6352462"	
+    ndkVersion "27.0.12077973"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_17
     }
 
     sourceSets {
@@ -48,7 +48,7 @@ android {
 
     defaultConfig {
         applicationId "com.kris.fretka"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -69,6 +69,9 @@ android {
             ndk {
                 debugSymbolLevel 'FULL'
             }
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -79,5 +82,5 @@ flutter {
 
 dependencies {
 	implementation "androidx.multidex:multidex:2.0.1"
-	implementation 'androidx.annotation:annotation:1.9.0'
+	implementation 'androidx.annotation:annotation:1.9.1'
 }

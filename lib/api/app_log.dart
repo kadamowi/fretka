@@ -17,3 +17,12 @@ Future<void> logChomik(String textLog) async {
     }
   }
 }
+
+List<MapEntry<String, String>> logInfo = [];
+
+void addLog(String place, String message) {
+  if (kDebugMode) {
+    print('$place: $message');
+  }
+  logInfo.add(MapEntry(place, message));
+}

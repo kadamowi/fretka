@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../api/app_log.dart';
 import '../api/calls_info.dart';
 import '../api/notes_api.dart';
 import '../api/user_info.dart';
@@ -133,6 +134,39 @@ class _ProfileTabState extends State<ProfileTab> {
                     ],
                   ),
                 ],
+              ),
+            ),
+            Expanded(
+              child: ThemedContainer(
+                child: Column(
+                  children: [
+                    Center(child: Text('Operacje', style: Theme.of(context).textTheme.titleMedium)),
+                    Expanded(
+                      child: ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: logInfo.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20)),
+                              margin: EdgeInsets.all(5),
+                              padding: EdgeInsets.all(5),
+                              child: ListTile(
+                                title: Text(logInfo[index].key,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                                subtitle: Text(logInfo[index].value),
+                              ));
+                        },
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ],

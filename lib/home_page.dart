@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api/app_log.dart';
 import 'api/calls_info.dart';
+import 'api/get_recording_path.dart';
 import 'api/notes_api.dart';
 
 class HomePage extends StatefulWidget {
@@ -51,6 +52,8 @@ class _StateHomePage extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    addLog('Home', 'initState()');
+    addLog('Directory.systemTemp.path', Directory.systemTemp.path);
     SharedPreferences.getInstance().then((value) {
       preferences = value;
       getUser();
@@ -59,6 +62,12 @@ class _StateHomePage extends State<HomePage> {
         _isUserLoaded = true;
       });
       _checkPermission().then((_) => _init());
+
+      if (ownerName.isEmpty || ownerNumber.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showMissingDataDialog();
+        });
+      }
     });
   }
 
@@ -69,6 +78,8 @@ class _StateHomePage extends State<HomePage> {
   }
 
   Future<void> initConnectivity() async {
+    String recordingPath = await getRecordingPath();
+    addLog('recordingPath', recordingPath);
     late List<ConnectivityResult> result;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
@@ -92,6 +103,26 @@ class _StateHomePage extends State<HomePage> {
     if (!result.contains(ConnectivityResult.none)) {
       updateNoteAfterSync('Conectivity');
     }
+  }
+
+  void _showMissingDataDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Brak ustawień'),
+          content: const Text('Przejdź do zakładki Profil i wprowadź inicjał użytkownika i numer telefonu'),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

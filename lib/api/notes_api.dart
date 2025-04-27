@@ -116,16 +116,19 @@ Future<void> updateNoteAfterSync(String source) async {
 
   final azureNotes = await getAzureNotes();
   if (azureNotes == null) {
+    if (kDebugMode) {
+      print('  getAzureNotes: brak notatek');
+    }
     isSynchro = false;
     return;
   }
   if (kDebugMode) {
-    print('  getAzureNotes: ${azureNotes.length}');
+    print('  getAzureNotes: azureNotes.length ${azureNotes.length}');
   }
 
   final allNotes = await DatabaseHelper().getAllNotes();
   if (kDebugMode) {
-    print('  getAllNotes: ${allNotes.length}');
+    print('  getAllNotes: allNotes.length ${allNotes.length}');
   }
 
   for (var note in allNotes) {
