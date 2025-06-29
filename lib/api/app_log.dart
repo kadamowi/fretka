@@ -18,6 +18,28 @@ Future<void> logChomik(String textLog) async {
   }
 }
 
+Future<void> deleteLogChomik() async {
+  try {
+    final directory = await getApplicationDocumentsDirectory();
+    final logFile = File('${directory.path}/chomik.log');
+
+    if (await logFile.exists()) {
+      await logFile.delete();
+      if (kDebugMode) {
+        print("Plik chomik.log został usunięty.");
+      }
+    } else {
+      if (kDebugMode) {
+        print("Plik chomik.log nie istnieje.");
+      }
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print("Wystąpił błąd podczas kasowania pliku: $e");
+    }
+  }
+}
+
 List<MapEntry<String, String>> logInfo = [];
 
 void addLog(String place, String message) {

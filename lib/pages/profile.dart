@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -94,14 +95,42 @@ class _ProfileTabState extends State<ProfileTab> {
                         visible: !Platform.isWindows,
                         child: Column(
                           children: [
-                            SizedBox(
-                              width: 200,
-                              child: ElevatedButton(
-                                  onPressed: () async {
-                                    final directory = await getApplicationDocumentsDirectory();
-                                    Share.shareXFiles([XFile('${directory.path}/chomik.log')], text: 'directory.path');
-                                  },
-                                  child: Text('Udostępnij log', style: Theme.of(context).textTheme.labelLarge)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                SizedBox(
+                                  width: 150,
+                                  child: ElevatedButton(
+                                      onPressed: () async {
+                                        final directory = await getApplicationDocumentsDirectory();
+                                        final logFilePath = '${directory.path}/chomik.log';
+
+                                        final file = File(logFilePath);
+
+                                        if (await file.exists()) {
+                                          await Share.shareXFiles(
+                                            [XFile(logFilePath)],
+                                            text: 'Zobacz logi z aplikacji Chomik.',
+                                          );
+                                        } else {
+                                          if (kDebugMode) {
+                                            print("Plik chomik.log nie istnieje.");
+                                          }
+                                        }
+                                        //Share.shareXFiles([XFile('${directory.path}/chomik.log')], text: 'directory.path');
+                                      },
+                                      child: Text('Udostępnij log', style: Theme.of(context).textTheme.labelLarge)),
+                                ),
+                                SizedBox(
+                                  width: 150,
+                                  child: ElevatedButton(
+                                      onPressed: () async {
+                                        await deleteLogChomik();
+                                        showAlertDialog(context, "Plik usunięty");
+                                      },
+                                      child: Text('Skasuj log', style: Theme.of(context).textTheme.labelLarge)),
+                                ),
+                              ],
                             ),
                             SizedBox(height: 20),
                             SizedBox(

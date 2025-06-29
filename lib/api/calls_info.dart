@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:call_log/call_log.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,10 +10,10 @@ import 'package:phone_state_background/phone_state_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_log.dart';
-import 'call_monitor.dart';
+//import 'call_monitor.dart';
 
 @pragma('vm:entry-point')
-Future<bool> sendCalls(task) async {
+Future<bool> sendCalls(String task) async {
   if (kDebugMode) {
     print('Wysyłka połączeń: $task');
   }
@@ -20,18 +21,35 @@ Future<bool> sendCalls(task) async {
   String dateNow = DateTime.now().toString();
   await logChomik('$dateNow: sendCalls Task:$task');
 
-  final urlCall = Uri.parse('https://ricco.azurewebsites.net//api/call');
-  final baseUrlLast = Uri.parse('https://ricco.azurewebsites.net//api/last');
+  final urlCall = Uri.parse('https://ricco.azurewebsites.net/api/call');
+  final baseUrlLast = Uri.parse('https://ricco.azurewebsites.net/api/last');
   final headers = {"Content-Type": "application/json", "App": "Fretka"};
-  final prefs = await SharedPreferences.getInstance();
-  String name = prefs.getString('OwnerName') ?? '-';
-  String number = prefs.getString('OwnerNumber') ?? '-';
+  late SharedPreferences prefs;
+  String name = '-';
+  String number = '-';
+
+  try {
+    prefs = await SharedPreferences.getInstance();
+    name = prefs.getString('OwnerName') ?? '-';
+    number = prefs.getString('OwnerNumber') ?? '-';
+    // użyj ich dalej
+  } catch (e) {
+    await logChomik('$dateNow: sendCalls: Nie udało się odczytać danych użytkownika z SharedPreferences: $e');
+    return true;
+  }
 
   if (name == '-') {
     dateNow = DateTime.now().toString();
     await logChomik('$dateNow: sendCalls Brak danych użytkownika');
     return true;
   }
+
+  final connectivityResult = await Connectivity().checkConnectivity();
+  if (connectivityResult == ConnectivityResult.none) {
+    await logChomik('$dateNow: sendCalls: Brak internetu w tle');
+    return true;
+  }
+
   try {
     // Sprawdzamy co ostanio wrzuciliśmy
     Uri urlLast = Uri(
@@ -136,8 +154,7 @@ Future<bool> sendCalls(task) async {
 
 @pragma('vm:entry-point')
 Future<void> phoneStateBackgroundCallbackHandler(PhoneStateBackgroundEvent event, String number, int duration) async {
-  final callMonitor = CallMonitor();
-
+  //final callMonitor = CallMonitor();
   String dateNow = DateTime.now().toString();
   await logChomik('$dateNow: $event $number $duration');
   addLog('phoneStateBackgroundCallback', '$dateNow: $event $number $duration');
@@ -147,8 +164,8 @@ Future<void> phoneStateBackgroundCallbackHandler(PhoneStateBackgroundEvent event
       if (kDebugMode) {
         print('Incoming call started');
       }
-      addLog('callMonitor', 'startRecording $number');
-      await callMonitor.startRecording(number);
+      //addLog('callMonitor', 'startRecording $number');
+      //await callMonitor.startRecording(number);
       break;
     case PhoneStateBackgroundEvent.incomingreceived:
       break;
@@ -156,33 +173,34 @@ Future<void> phoneStateBackgroundCallbackHandler(PhoneStateBackgroundEvent event
       if (kDebugMode) {
         print('Call ended');
       }
-      addLog('callMonitor', 'stopRecording $number');
-      await callMonitor.stopRecording();
+      //addLog('callMonitor', 'stopRecording $number');
+      //await callMonitor.stopRecording();
       await Future.delayed(const Duration(seconds: 5));
-      sendCalls("incomingend");
+      await sendCalls("incomingend");
       break;
     case PhoneStateBackgroundEvent.outgoingstart:
       if (kDebugMode) {
         print('Outgoing call started');
       }
-      addLog('callMonitor', 'startRecording $number');
-      await callMonitor.startRecording(number);
+      //addLog('callMonitor', 'startRecording $number');
+      //await callMonitor.startRecording(number);
       break;
     case PhoneStateBackgroundEvent.outgoingend:
       if (kDebugMode) {
         print('Call ended');
       }
-      addLog('callMonitor', 'stopRecording $number');
-      await callMonitor.stopRecording();
+      //addLog('callMonitor', 'stopRecording $number');
+      //await callMonitor.stopRecording();
       await Future.delayed(const Duration(seconds: 5));
-      sendCalls("outgoingend");
+      await sendCalls("outgoingend");
       break;
     case PhoneStateBackgroundEvent.incomingmissed:
       break;
   }
-  await callMonitor.disposeRecorder();
+  //await callMonitor.disposeRecorder();
 }
 
+@pragma('vm:entry-point')
 String callTypeStr(CallType? callTypeEntry) {
   String callType;
   switch (callTypeEntry) {

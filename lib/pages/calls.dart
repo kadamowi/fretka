@@ -118,7 +118,7 @@ class _CallsTabState extends State<CallsTab> with WidgetsBindingObserver {
                       return ItemContainer(
                         child: ListTile(
                           isThreeLine: true,
-                          title: Text('${_callLogEntries[index].name} ${_callLogEntries[index].number}'),
+                          title: Text('${_callLogEntries[index].name ?? '???'} ${_callLogEntries[index].number ?? '???'}'),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
