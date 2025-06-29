@@ -135,11 +135,11 @@ class _TasksTabState extends State<TasksTab> with WidgetsBindingObserver {
                         ],
                       ),
                       Text(
-                        task['appDetails'],
+                        task['title'],
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: textColor),
                       ),
                       Text(
-                        task['title'],
+                        task['appDetails'],
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],

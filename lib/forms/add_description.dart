@@ -21,6 +21,7 @@ class _AddDescriptionState extends State<AddDescription> with WidgetsBindingObse
   bool _speechEnabled = false;
   //TextEditingController voiceInput = TextEditingController();
   TextEditingController textInput = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   late String _description;
 
   void _initSpeech() async {
@@ -37,11 +38,15 @@ class _AddDescriptionState extends State<AddDescription> with WidgetsBindingObse
       textInput.text = widget.initialDescription.description;
     });
     _startListening();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_focusNode);
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this); // przestań obserwować
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -177,6 +182,7 @@ class _AddDescriptionState extends State<AddDescription> with WidgetsBindingObse
                        */
                       TextFormField(
                         controller: textInput,
+                        focusNode: _focusNode,
                         validator: (value) {
                           if (value!.isEmpty && value.trim().isEmpty) {
                             return 'Wprowadź opis';
